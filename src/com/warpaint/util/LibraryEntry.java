@@ -25,7 +25,9 @@ public class LibraryEntry<T> {
         this(p,key);
         cache = obj;
     }
-
+    public String toString(){
+        return getName();
+    }
     private LibraryEntry() {
 
     }
@@ -68,6 +70,7 @@ public class LibraryEntry<T> {
      * Releases this entry's object pointer to let the garbage collector
      * free up memory without destroying the entry. A getObject() call to this
      * entry will reload the object again into memory.
+     * WARNING: Any changes to the object that were not saved throught save() , will be lost!
      */
     public void release(){
         cache=null;
