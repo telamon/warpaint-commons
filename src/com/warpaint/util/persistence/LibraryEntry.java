@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package com.warpaint.util;
+package com.warpaint.util.persistence;
 
 import javax.swing.ImageIcon;
 
