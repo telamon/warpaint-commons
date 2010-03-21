@@ -25,9 +25,12 @@ public class LibraryEntry<T> {
         this(p,key);
         cache = obj;
     }
+
+    @Override
     public String toString(){
         return getName();
     }
+    
     private LibraryEntry() {
 
     }

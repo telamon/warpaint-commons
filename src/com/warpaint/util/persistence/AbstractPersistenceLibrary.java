@@ -17,18 +17,22 @@ public abstract class AbstractPersistenceLibrary<T> {
     protected AbstractPersistenceLibrary(){
         
     }
-    
+    // Abstract Library implementations.
     public abstract String getMyName();
     public abstract ArrayList<LibraryEntry<T>> getEntryList();
     protected abstract T getObject(Object key);
-    public abstract String getNameFor(T obj); //Implemented on instance creation
-    public abstract void setNameFor(T obj,String name); //Implemented on instance creation
     protected abstract Object keyOf(String name);
     public abstract LibraryEntry<T> newEntry(T object);
     protected abstract boolean remove(LibraryEntry<T> entry);
     protected abstract void save(LibraryEntry<T> entry);
     protected abstract void rename(LibraryEntry<T> entry,String newname);
     protected abstract boolean exists(LibraryEntry<T> entry);
+
+    // On instance implementations.
+    public abstract String getNameFor(T obj); //Implemented on instance creation
+    public abstract void setNameFor(T obj,String name); //Implemented on instance creation
+    public abstract javax.swing.ImageIcon generateIcon(T obj); //Implemented on instance creation
+    
     /**
      *  Creates a new LibraryEntry and persists it.
      *  Renames this object if an object with the same name already exists.
@@ -76,7 +80,7 @@ public abstract class AbstractPersistenceLibrary<T> {
     protected static XStream getXStream(){
        return xstream;
     }
-    public abstract javax.swing.ImageIcon generateIcon(T obj); //Implemented on instance creation
+
     public LibraryEntry<T> find(String name){
         LibraryEntry<T> tmp = new LibraryEntry<T>(this,keyOf(name));
         if(tmp.exists()){
