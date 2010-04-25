@@ -28,6 +28,7 @@ public class REqueST {
     private static boolean DEBUG;
     private URL url;
     private static String baseURL;
+    private static String contentType="application/xml";
     private String method;
     private Object postData;
     private static HashMap<String,String> headers;
@@ -36,7 +37,9 @@ public class REqueST {
     public static void showDebug(boolean b){
         DEBUG=b;
     }
-
+    public static void setContentType(String ctype){
+        contentType=ctype;
+    }
     protected REqueST(URL url){
         initCookieManager();
         this.url = url;
@@ -59,8 +62,8 @@ public class REqueST {
         if(headers==null){
             headers = new HashMap<String,String>();
             headers.put("User-agent", "WarPaint.RESTLib/1.0");
-            headers.put("Accept","application/xml");
-            headers.put("Content-type", "application/xml");
+            headers.put("Accept",contentType);
+            headers.put("Content-type", contentType);
         }
     }
     private static void setHeaderField(String key, String value){
