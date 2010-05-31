@@ -7,15 +7,27 @@ package com.warpaint.util.persistence;
 
 import com.thoughtworks.xstream.XStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
  * @author telamon
  */
 public abstract class AbstractPersistenceLibrary<T> {
-
+    private static ArrayList<AbstractPersistenceLibrary> initializedLibraries;
+    public static AbstractPersistenceLibrary getLibrary(String identifier){
+        for(AbstractPersistenceLibrary apl: initializedLibraries){
+            if(apl.getMyName().equals(identifier)){
+                return apl;
+            }
+        }
+        return null;
+    }
     protected AbstractPersistenceLibrary(){
-        
+        if(initializedLibraries==null){
+            initializedLibraries= new ArrayList<AbstractPersistenceLibrary>();
+        }
+        initializedLibraries.add(this);
     }
     // Abstract Library implementations.
     public abstract String getMyName();
