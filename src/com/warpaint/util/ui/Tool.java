@@ -5,17 +5,19 @@
 
 package com.warpaint.util.ui;
 
-import java.awt.Event;
-import javax.swing.ImageIcon;
+import java.awt.event.ActionEvent;
+import java.net.URI;
+import javax.swing.Icon;
+
 
 /**
  *
  * @author telamon
  */
 public interface Tool {
-    public String getUrl();
+    public URI getURI();
     public String getName();
-    public ImageIcon getIcon();
-    public void doAction(Event e);
+    public Icon getIcon();
+    public void doAction(ActionEvent e);
     
 }

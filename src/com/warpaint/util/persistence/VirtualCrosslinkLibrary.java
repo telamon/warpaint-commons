@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 
@@ -76,7 +77,7 @@ public class VirtualCrosslinkLibrary extends AbstractPersistenceLibrary{
         }
 
         @Override
-        public ImageIcon getIcon() {
+        public Icon getIcon() {
             return ref.getTarget().getIcon();
         }
         @Override
@@ -125,7 +126,8 @@ public class VirtualCrosslinkLibrary extends AbstractPersistenceLibrary{
     public String getMyName() {
         return datafile.getName();
     }
-    private AbstractPersistenceLibrary getLibrary(String name){
+    
+    private AbstractPersistenceLibrary gettingLibrary(String name){
         for(AbstractPersistenceLibrary apl:libraries){
             if(apl.getMyName().equals(name)){
                 return apl;

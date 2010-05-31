@@ -5,14 +5,22 @@
 
 package com.warpaint.util.persistence;
 
-import javax.swing.ImageIcon;
+import com.warpaint.util.ui.Tool;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Icon;
+
 
 /**
  *
  * @author telamon
  */
-public class LibraryEntry<T> {
-    protected javax.swing.ImageIcon icon;
+public class LibraryEntry<T> implements Tool{
+    protected javax.swing.Icon icon;
     protected Object key;
     protected T cache;
     protected String name;
@@ -86,7 +94,7 @@ public class LibraryEntry<T> {
      * cached exists.
      * @return
      */
-    public ImageIcon getIcon(){
+    public Icon getIcon(){
         if(icon!=null){
             return icon;
         }
@@ -96,7 +104,7 @@ public class LibraryEntry<T> {
      * Throw away the cached icon and generate a new one.
      * @return
      */
-    public ImageIcon regenerateIcon(){
+    public Icon regenerateIcon(){
         boolean wasAllocated=isAllocated();
         icon = parent.generateIcon(get());
         if(!wasAllocated){
@@ -141,5 +149,25 @@ public class LibraryEntry<T> {
     }
     public boolean exists(){
         return parent.exists(this);
+    }
+
+    public URI getURI() {
+        try {
+            return new URI("apl",parent.getMyName(), getName());
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(LibraryEntry.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public void doAction(ActionEvent e) {
+        boolean doRelease = cache == null;
+        T o = get();
+        if(o instanceof ActionListener){
+            e.setSource(this);
+            ((ActionListener)o).actionPerformed(e);
+        }else if(doRelease){
+            release();
+        }
     }
 }
