@@ -39,8 +39,10 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         setCellRenderer(this);
         setLayoutOrientation(javax.swing.JList.HORIZONTAL_WRAP);
         setVisibleRowCount(0);
-        setPreferredSize(new Dimension(200,40));        
-        setBorder(new javax.swing.border.LineBorder(Color.GREEN));        
+        setPreferredSize(new Dimension(200,42));
+        setBorder(new javax.swing.border.LineBorder(Color.GRAY));
+        this.setBackground(new Color(0x0,true));
+        this.setOpaque(false);
         addMouseListener(this);
 
         TransferHandler th = new ToolTransferHandler();
@@ -90,7 +92,8 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
     }
 
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        ToolComponent tc = (ToolComponent)value;        
+        ToolComponent tc = (ToolComponent)value;
+        tc.setBorder(null);
         return tc;
     }
 

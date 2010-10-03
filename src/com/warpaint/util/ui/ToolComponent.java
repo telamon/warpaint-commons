@@ -26,6 +26,8 @@ public class ToolComponent extends JLabel implements MouseListener, Transferable
         this.setIcon(t.getIcon());
         this.setToolTipText(t.getName());
         this.addMouseListener(this);
+        this.setBorder(null);
+        //this.setBorder(new javax.swing.border.LineBorder(Color.GRAY));
     }
 
     public void mouseClicked(MouseEvent arg0) {
@@ -41,11 +43,11 @@ public class ToolComponent extends JLabel implements MouseListener, Transferable
     }
 
     public void mouseEntered(MouseEvent arg0) {
-        this.setBorder(new javax.swing.border.LineBorder(Color.BLUE));
+        //this.setBorder(new javax.swing.border.LineBorder(Color.BLUE));
     }
 
     public void mouseExited(MouseEvent arg0) {
-        this.setBorder(null);
+        //this.setBorder(null);
     }
     public static final DataFlavor[] flavours = new DataFlavor[]{new DataFlavor(Tool.class,DataFlavor.javaJVMLocalObjectMimeType)};
     public DataFlavor[] getTransferDataFlavors() {
