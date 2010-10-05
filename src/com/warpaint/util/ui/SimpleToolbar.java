@@ -44,7 +44,7 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         this.setBackground(new Color(0x0,true));
         this.setOpaque(false);
         addMouseListener(this);
-
+        this.setName("SimpleToolbar");
         TransferHandler th = new ToolTransferHandler();
             setTransferHandler(th);
             setDragEnabled(true);
