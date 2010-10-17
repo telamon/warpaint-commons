@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
@@ -25,6 +26,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DropMode;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.TransferHandler;
@@ -33,7 +35,7 @@ import javax.swing.TransferHandler;
  *
  * @author telamon
  */
-public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, MouseListener, DropTargetListener {
+public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, MouseListener {
     Vector<ToolComponent> tools = new Vector<ToolComponent>();
     private int direction = 0;
     private final static int cellSize=40;
@@ -53,9 +55,8 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         TransferHandler th = new ToolTransferHandler();
         setTransferHandler(th);
         setDragEnabled(true);
-        this.setDropMode(DropMode.ON);
-        java.awt.dnd.DropTarget dt= new java.awt.dnd.DropTarget(this,this);
-        
+        setDropMode(DropMode.ON_OR_INSERT);
+
     }
     public SimpleToolbar(Tool[] tools){
         this();
@@ -176,39 +177,30 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         this.repaint();
     }
 
-    public void dragEnter(DropTargetDragEvent dtde) {
-        System.out.println("Drop enter");
-    }
-
-    public void dragOver(DropTargetDragEvent dtde) {
-
-    }
-
-    public void dropActionChanged(DropTargetDragEvent dtde) {
-
-    }
-
-    public void dragExit(DropTargetEvent dte) {
-
-    }
-
-    public void drop(DropTargetDropEvent dtde) {
-        System.out.println("Dropship detected");
-    }
     class ToolTransferHandler extends TransferHandler {
 
         @Override
         public int getSourceActions(javax.swing.JComponent c) {
-            return TransferHandler.MOVE;
+            return TransferHandler.COPY_OR_MOVE;
         }
 
         @Override
         public Transferable createTransferable(javax.swing.JComponent c) {
-            return (ToolComponent) ((SimpleToolbar) c).getSelectedValue();
+            System.out.println("Transferable created");
+            return (ToolComponent) getSelectedValue();
         }
+
+
+        @Override
+        protected void exportDone(JComponent source, Transferable data, int action) {
+            super.exportDone(source, data, action);
+            System.out.println("done");
+        }
+
 
         @Override
         public boolean canImport(TransferSupport ts) {
+            System.out.println("Can import?");
             if (!ts.isDataFlavorSupported(ToolComponent.flavours[0])) {
                 return false;
             }
@@ -217,6 +209,7 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
 
         @Override
         public boolean importData(TransferSupport ts) {
+            System.out.println("Import");
             if (!canImport(ts)) {
                 return false;
             }
