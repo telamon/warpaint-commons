@@ -39,7 +39,7 @@ public class ToolComponent extends JLabel implements MouseListener, Transferable
     }
 
     public void mouseReleased(MouseEvent arg0) {
-        tool.doAction(new ActionEvent(this, ActionEvent.ACTION_PERFORMED,"MouseReleased", arg0.getModifiersEx()));
+        //tool.doAction(new ActionEvent(this, ActionEvent.ACTION_PERFORMED,"MouseReleased", arg0.getModifiersEx()));
     }
 
     public void mouseEntered(MouseEvent arg0) {
