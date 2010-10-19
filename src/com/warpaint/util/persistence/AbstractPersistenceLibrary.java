@@ -6,15 +6,26 @@
 package com.warpaint.util.persistence;
 
 import com.thoughtworks.xstream.XStream;
+import com.warpaint.util.ui.Tool;
+import com.warpaint.util.ui.ToolResolver;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Vector;
 
 /**
  *
  * @author telamon
  */
 public abstract class AbstractPersistenceLibrary<T> {
-    private static ArrayList<AbstractPersistenceLibrary> initializedLibraries;
+    private final static Vector<AbstractPersistenceLibrary> initializedLibraries = new Vector<AbstractPersistenceLibrary>();
+    private final static ToolResolver aplResolver = new ToolResolver("apl") {
+        @Override
+        protected Tool resolveTool(URI uri) {
+            AbstractPersistenceLibrary apl = AbstractPersistenceLibrary.getLibrary(uri.getSchemeSpecificPart());
+            return apl.find(uri.getFragment());
+        }
+    };
     public static AbstractPersistenceLibrary getLibrary(String identifier){
         for(AbstractPersistenceLibrary apl: initializedLibraries){
             if(apl.getMyName().equals(identifier)){
@@ -23,11 +34,9 @@ public abstract class AbstractPersistenceLibrary<T> {
         }
         return null;
     }
-    protected AbstractPersistenceLibrary(){
-        if(initializedLibraries==null){
-            initializedLibraries= new ArrayList<AbstractPersistenceLibrary>();
-        }
+    protected AbstractPersistenceLibrary(){       
         initializedLibraries.add(this);
+        ToolResolver.addResolver(aplResolver);
     }
     // Abstract Library implementations.
     public abstract String getMyName();

@@ -33,4 +33,15 @@ public abstract class EventDispatcherAdapter<T> {
             return listenersCache;
         }
     }
+    /**
+     * A maintenence hatch for convenience, only to be used the classes that define this dispatcher internally.
+     * Will return null by default.
+     * @return
+     */
+    public T[] exportListenersArray(){
+        return null;
+    }
+
+
+
 }

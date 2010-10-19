@@ -6,6 +6,7 @@
 package com.warpaint.util.ui;
 
 
+import com.warpaint.util.misc.EventDispatcherAdapter;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -39,6 +40,21 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
     Vector<ToolComponent> tools = new Vector<ToolComponent>();
     private int direction = 0;
     private final static int cellSize=40;
+    private static class DispatchHolder{
+        //Class intercommunication.
+        public static final EventDispatcherAdapter<ToolbarListener> DISPATCHER = new EventDispatcherAdapter<ToolbarListener>(){
+            @Override
+            protected Class getListenerClass() {
+                return ToolbarListener.class;
+            }
+
+            @Override
+            public ToolbarListener[] exportListenersArray() {
+                return getListenersArray();
+            }
+
+        };
+    }
 
     public SimpleToolbar() {
         setFixedCellHeight(cellSize);
@@ -58,6 +74,12 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         setDropMode(DropMode.ON_OR_INSERT);
 
     }
+    public static void addListener(ToolbarListener l){
+        DispatchHolder.DISPATCHER.addListener(l);
+    }
+    public static void removeListener(ToolbarListener l){
+        DispatchHolder.DISPATCHER.removeListener(l);
+    }
     public SimpleToolbar(Tool[] tools){
         this();
         for(Tool t: tools){
@@ -66,11 +88,11 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
     }
     public void addTool(Tool tool){
         addTool(tools.size(),tool);
-
     }
     public void setDirection(int d){
         direction=d;
     }
+
     public void addTool(int index,Tool tool) {
         ToolComponent tc = new ToolComponent(tool);        
         removeTool(tc.tool);
@@ -83,7 +105,9 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
             setPreferredSize(new Dimension(cellSize , cellSize*tools.size()));
         }
         this.setListData(tools.toArray());        
-        
+        for(ToolbarListener tl: DispatchHolder.DISPATCHER.exportListenersArray()){
+            tl.toolAppended(this, tool);
+        }
     }
     public int indexOfURI(URI uri){
         for(ToolComponent tc : tools){
@@ -101,6 +125,9 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
             if(tc.tool.getURI().equals(tool.getURI())){
                 tools.remove(tc);
                 this.setListData(tools);
+                for(ToolbarListener tl: DispatchHolder.DISPATCHER.exportListenersArray()){
+                    tl.toolRemoved(this, tool);
+                }
                 return tc.tool;
             }
         }
@@ -123,6 +150,9 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
             if(ev.isShiftDown()){
                 removeTool(((ToolComponent)o).tool);
             }else{
+                for(ToolbarListener tl: DispatchHolder.DISPATCHER.exportListenersArray()){
+                    tl.toolClicked(this,((ToolComponent)o).tool);
+                }
                 ((MouseListener)o).mouseClicked(ev);
             }
         }

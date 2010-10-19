@@ -60,7 +60,14 @@ public class LibraryEntry<T> implements Tool{
         }
         return name;
     }
-
+    public Class getObjectClass(){
+        boolean released = cache == null;
+        Class c = get().getClass();
+        if(released){
+            release();
+        }
+        return c;
+    }
     public T get(){
         if(cache==null){
             cache = (T) parent.getObject(key);
@@ -115,6 +122,12 @@ public class LibraryEntry<T> implements Tool{
     public String getLibraryName(){
         return parent.getMyName();
     }
+
+
+    public AbstractPersistenceLibrary getLibrary() {
+        return parent;
+    }
+
     public void rename(String newName){
         parent.rename(this, newName);
     }
