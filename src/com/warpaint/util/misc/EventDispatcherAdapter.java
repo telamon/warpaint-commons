@@ -14,6 +14,9 @@ public abstract class EventDispatcherAdapter<T> {
     private T[] listenersCache;
     public void addListener(T l) {
        synchronized(listeners) {
+            if(listeners.contains(l)){
+                return;
+            }
             listeners.add(l);
             listenersCache=null;
         }

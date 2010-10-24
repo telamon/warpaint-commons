@@ -87,6 +87,9 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         }
     }
     public void addTool(Tool tool){
+        if(tool==null){
+            return;
+        }
         addTool(tools.size(),tool);
     }
     public void setDirection(int d){
