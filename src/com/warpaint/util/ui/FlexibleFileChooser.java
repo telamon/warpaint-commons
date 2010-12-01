@@ -51,27 +51,40 @@ public abstract class  FlexibleFileChooser extends javax.swing.JFileChooser{
         if(cwd.exists() && cwd.isDirectory()){
             setCurrentDirectory(cwd);
         }
-        
-        int result ;
-        if(action == OPEN){
-            result = showOpenDialog(modal);
-        }else if(action == SAVE){
-            result = showSaveDialog(modal);
-        }else{
-            result = showDialog(modal, "Undefined action");
-        }
-        
-        if(result==javax.swing.JFileChooser.APPROVE_OPTION) {
-            java.io.File file = getSelectedFile();
-            lastUsedPath = file.getParent();
-            int lastDot = file.getName().lastIndexOf(".");
-            String ext = lastDot!=-1?((String)categories.get(file.getName().substring(lastDot).toLowerCase())):"";
-            try {
-                fileChosen(ext, file);
-            } catch (IOException ex) {
-                Logger.getLogger(FlexibleFileChooser.class.getName()).log(Level.SEVERE, null, ex);
+        boolean complete = false;
+        while(!complete){
+            int result ;
+            if(action == OPEN){
+                result = showOpenDialog(modal);
+            }else if(action == SAVE){
+                result = showSaveDialog(modal);
+
+            }else{
+                result = showDialog(modal, "Undefined action");
             }
-            
+
+            if(result==javax.swing.JFileChooser.APPROVE_OPTION) {
+                java.io.File file = getSelectedFile();
+                if(action == SAVE && file.exists()){
+                    int ores = javax.swing.JOptionPane.showConfirmDialog(modal, "The file chosen already exists, do you want to overwrite?","Overwrite?",javax.swing.JOptionPane.YES_NO_CANCEL_OPTION);
+                    if(ores == javax.swing.JOptionPane.NO_OPTION){
+                        continue;
+                    }else if(ores == javax.swing.JOptionPane.CANCEL_OPTION){
+                        complete=true;
+                        break;
+                    }
+                }
+                lastUsedPath = file.getParent();
+                int lastDot = file.getName().lastIndexOf(".");
+                String ext = lastDot!=-1?((String)categories.get(file.getName().substring(lastDot).toLowerCase())):"";
+                try {
+                    fileChosen(ext, file);
+                } catch (IOException ex) {
+                    Logger.getLogger(FlexibleFileChooser.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            }
+            complete = true;
         }
     }
     public FlexibleFileChooser(java.awt.Component modal,String filefilters,int action){

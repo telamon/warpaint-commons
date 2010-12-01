@@ -260,5 +260,5 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
             return true;
         }
     };
-
+    
 }
