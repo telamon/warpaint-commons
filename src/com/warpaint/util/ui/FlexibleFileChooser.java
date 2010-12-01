@@ -65,6 +65,18 @@ public abstract class  FlexibleFileChooser extends javax.swing.JFileChooser{
 
             if(result==javax.swing.JFileChooser.APPROVE_OPTION) {
                 java.io.File file = getSelectedFile();
+
+                lastUsedPath = file.getParent();
+                int lastDot = file.getName().lastIndexOf(".");
+                //ensure extension on save addition
+                String ext;
+                if(action==SAVE && lastDot==-1){
+                    String newName = ((FlexibleFileFilter)this.getFileFilter()).extensions.get(0);
+                    file=new File( file.getAbsoluteFile() + (newName.startsWith(".") ? newName : "." + newName));
+                    ext = ((FlexibleFileFilter)this.getFileFilter()).getDescription();
+                }else{
+                    ext=lastDot!=-1?((String)categories.get(file.getName().substring(lastDot).toLowerCase())):"";
+                }
                 if(action == SAVE && file.exists()){
                     int ores = javax.swing.JOptionPane.showConfirmDialog(modal, "The file chosen already exists, do you want to overwrite?","Overwrite?",javax.swing.JOptionPane.YES_NO_CANCEL_OPTION);
                     if(ores == javax.swing.JOptionPane.NO_OPTION){
@@ -74,9 +86,6 @@ public abstract class  FlexibleFileChooser extends javax.swing.JFileChooser{
                         break;
                     }
                 }
-                lastUsedPath = file.getParent();
-                int lastDot = file.getName().lastIndexOf(".");
-                String ext = lastDot!=-1?((String)categories.get(file.getName().substring(lastDot).toLowerCase())):"";
                 try {
                     fileChosen(ext, file);
                 } catch (IOException ex) {
