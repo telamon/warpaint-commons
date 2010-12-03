@@ -19,6 +19,9 @@ public abstract class  FlexibleFileChooser extends javax.swing.JFileChooser{
     public static final int OPEN = 0;
     public static final int SAVE = 1;
     public static String lastUsedPath ="";
+    private int action;
+    private java.awt.Component modal;
+    private HashMap categories = new HashMap();
     /**
      * 
      * @param filefilters "Images:jpg,gif,png;Text Files:txt,.rtf"
@@ -27,13 +30,15 @@ public abstract class  FlexibleFileChooser extends javax.swing.JFileChooser{
      */
     public FlexibleFileChooser(java.awt.Component modal,String filefilters,int action,boolean imagePreview,boolean acceptAll){
         super();
+        this.action = action;
+        this.modal = modal;
         if(imagePreview){
             PreviewComponent pc = new PreviewComponent(this);
             setAccessory(pc);  
         }
         String[] filters = filefilters.split(";");
         String allSupported ="";
-        HashMap categories=new HashMap();
+
         for(String filter : filters){            
             String[] filt  = filter.split(":");
             String[] extensions = filt[1].split(",");
@@ -51,7 +56,10 @@ public abstract class  FlexibleFileChooser extends javax.swing.JFileChooser{
         if(cwd.exists() && cwd.isDirectory()){
             setCurrentDirectory(cwd);
         }
-        boolean complete = false;
+        
+    }
+    public void pop(){
+boolean complete = false;
         while(!complete){
             int result ;
             if(action == OPEN){
