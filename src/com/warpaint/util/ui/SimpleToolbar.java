@@ -38,6 +38,7 @@ import javax.swing.TransferHandler;
  */
 public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, MouseListener {
     Vector<ToolComponent> tools = new Vector<ToolComponent>();
+    private static Tool clipboard=null;
     private int direction = 0;
     private final static int cellSize=40;
     private static class DispatchHolder{
@@ -176,6 +177,13 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
 
     public void mouseReleased(MouseEvent ev) {
         int i = locationToIndex(ev.getPoint());
+        if(clipboard!=null){
+            addTool(i, clipboard);
+            clipboard=null;
+            this.invalidate();            
+            this.repaint();
+            return;
+        }
         if(i == -1){
             return;
         }
@@ -219,7 +227,8 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
 
         @Override
         public Transferable createTransferable(javax.swing.JComponent c) {
-            System.out.println("Transferable created");
+            //System.out.println("Transferable created");
+            clipboard= ((ToolComponent) getSelectedValue()).tool;
             return (ToolComponent) getSelectedValue();
         }
 
