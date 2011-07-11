@@ -37,10 +37,18 @@ import javax.swing.TransferHandler;
  * @author telamon
  */
 public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, MouseListener {
+
     Vector<ToolComponent> tools = new Vector<ToolComponent>();
     private static Tool clipboard=null;
+    private static SimpleToolbar clipSource=null;
+    private static int clipIndex=0;
+
     private int direction = 0;
     private final static int cellSize=40;
+    private int capacity = 0;
+    private boolean readOnly= true;
+
+    
     private static class DispatchHolder{
         //Class intercommunication.
         public static final EventDispatcherAdapter<ToolbarListener> DISPATCHER = new EventDispatcherAdapter<ToolbarListener>(){
@@ -57,7 +65,9 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         };
     }
 
-    public SimpleToolbar() {
+    public SimpleToolbar(int capacity) {
+        setCapacity(capacity);
+
         setFixedCellHeight(cellSize);
         setFixedCellWidth(cellSize);
         setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -75,6 +85,24 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         setDropMode(DropMode.ON_OR_INSERT);
 
     }
+    public int indexOf(Tool t){
+        for(ToolComponent tc: tools){
+            if(tc!=null && tc.tool.getURI().equals(t.getURI())){
+                return tools.indexOf(tc);
+            }
+        }
+        return -1;
+    }
+    public void setCapacity(int cap){
+        capacity=cap;
+        tools.setSize(capacity);
+    }
+    public int getCapacity(){
+        return capacity;
+    }
+    public SimpleToolbar(){
+        this(8);
+    }
     public static void addListener(ToolbarListener l){
         DispatchHolder.DISPATCHER.addListener(l);
     }
@@ -87,26 +115,47 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
             addTool(t);
         }
     }
+    private int firstFreeSlot(){
+        for(int i=0;i<tools.size();i++){
+            if(tools.get(i)==null){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+
+    public void setReadOnly(boolean dropEnabled) {
+        this.readOnly = dropEnabled;
+    }
+    public boolean isReadOnly(){
+        return readOnly;
+    }
     public void addTool(Tool tool){
         if(tool==null){
             return;
         }
-        addTool(tools.size(),tool);
+        addTool(firstFreeSlot(),tool);
     }
     public void setDirection(int d){
         direction=d;
     }
 
     public void addTool(int index,Tool tool) {
+        if(tool==null){
+            return;
+        }
+
         ToolComponent tc = new ToolComponent(tool);        
         removeTool(tc.tool);
-        index = index > tools.size() ? tools.size() : index;
+        index = index > capacity ? capacity : index;
         index = index < 0 ? 0 : index;
-        tools.add(index,tc);
+
+        tools.set(index, tc);
         if(direction==0){
-            setPreferredSize(new Dimension(cellSize*tools.size() , cellSize));
+            setPreferredSize(new Dimension(cellSize*capacity , cellSize));
         }else if(direction==1){
-            setPreferredSize(new Dimension(cellSize , cellSize*tools.size()));
+            setPreferredSize(new Dimension(cellSize , cellSize*capacity));
         }
         this.setListData(tools.toArray());        
         for(ToolbarListener tl: DispatchHolder.DISPATCHER.exportListenersArray()){
@@ -125,9 +174,15 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         return indexOfURI(uri) == -1 ? false : true;
     }
     public Tool removeTool(Tool tool) {
+        if(tool==null){
+            return null;
+        }
         for(ToolComponent tc : tools){
+            if(tc==null){
+                continue;
+            }
             if(tc.tool.getURI().equals(tool.getURI())){
-                tools.remove(tc);
+                tools.set(tools.indexOf(tc),null);
                 this.setListData(tools);
                 for(ToolbarListener tl: DispatchHolder.DISPATCHER.exportListenersArray()){
                     tl.toolRemoved(this, tool);
@@ -139,8 +194,11 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
     }
 
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        ToolComponent tc = (ToolComponent)value;
-        tc.setBorder(null);
+        JComponent tc = (ToolComponent)value;
+        if(tc==null){
+            tc = new javax.swing.JLabel();
+        }
+        tc.setBorder(new javax.swing.border.LineBorder(Color.lightGray));
         return tc;
     }
 
@@ -151,11 +209,15 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         }
         Object o = this.getModel().getElementAt(i);
         if(o instanceof MouseListener){
-            if(ev.isShiftDown()){
-                removeTool(((ToolComponent)o).tool);
-            }else{
+            if(ev.isShiftDown() && !readOnly){
+                if(o!=null){
+                    removeTool(((ToolComponent)o).tool);
+                }
+           }else{
                 for(ToolbarListener tl: DispatchHolder.DISPATCHER.exportListenersArray()){
-                    tl.toolClicked(this,((ToolComponent)o).tool);
+                  if(o!=null){
+                   tl.toolClicked(this,((ToolComponent)o).tool);
+                  }
                 }
                 ((MouseListener)o).mouseClicked(ev);
             }
@@ -177,9 +239,15 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
 
     public void mouseReleased(MouseEvent ev) {
         int i = locationToIndex(ev.getPoint());
-        if(clipboard!=null){
+        if(clipboard!=null && !readOnly){
+
+            if(clipSource == this && tools.elementAt(i)!= null){ // Perform a swap.
+                addTool(clipIndex,removeTool(tools.elementAt(i).tool));
+                
+            }
             addTool(i, clipboard);
             clipboard=null;
+            clipSource=null;
             this.invalidate();            
             this.repaint();
             return;
@@ -217,7 +285,9 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         }
         this.repaint();
     }
-
+    private SimpleToolbar self(){
+        return this;
+    }
     class ToolTransferHandler extends TransferHandler {
 
         @Override
@@ -228,7 +298,13 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         @Override
         public Transferable createTransferable(javax.swing.JComponent c) {
             //System.out.println("Transferable created");
+            if(getSelectedValue()==null){
+                return null;
+            }
+            clipIndex=getSelectedIndex();
             clipboard= ((ToolComponent) getSelectedValue()).tool;
+            clipSource= self();
+            removeTool(clipboard);
             return (ToolComponent) getSelectedValue();
         }
 
