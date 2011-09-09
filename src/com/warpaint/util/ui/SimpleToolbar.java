@@ -33,9 +33,13 @@ import javax.swing.ListCellRenderer;
 import javax.swing.TransferHandler;
 
 /**
- *
+ * SimpleToolbar.java
+ * Acts as a container for Tools.
+ * In reality it's just a JList with a custom renderer and a vector of ToolComponents.
+ * All Mouse events/gestures are delegated to the ToolComponent below the mouse.
  * @author telamon
  */
+
 public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, MouseListener {
 
     Vector<ToolComponent> tools = new Vector<ToolComponent>();
@@ -209,10 +213,8 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         }
         Object o = this.getModel().getElementAt(i);
         if(o instanceof MouseListener){
-            if(ev.isShiftDown() && !readOnly){
-                if(o!=null){
-                    removeTool(((ToolComponent)o).tool);
-                }
+            if(o!=null && ev.isShiftDown() && !readOnly){
+                removeTool(((ToolComponent)o).tool);
            }else{
                 for(ToolbarListener tl: DispatchHolder.DISPATCHER.exportListenersArray()){
                   if(o!=null){
