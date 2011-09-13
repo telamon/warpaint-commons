@@ -116,14 +116,22 @@ public abstract class WarSpinner extends JPanel{
             
         }
         public void mouseDragged(MouseEvent e) {
-            if(old==null){
-                return;
+            double v=0.0;
+            if(false){ // Relative
+            
+                if(old==null){
+                    return;
+                }
+                float dampen = 0.1f;
+                v = ((e.getPoint().x-old.x)*step)*dampen+((Double)spinner.getValue()).doubleValue();
+                spinner.setValue(v>min?(v<max?v:max):min);
+                //System.out.println(((e.getPoint().x-old.x)*dragStep)*dampen+"+"+((Double)spinner.getValue()).doubleValue());
+                old = e.getPoint();
+            }else{ // Absolute
+                v = e.getPoint().x*1.0/(pLabel.getWidth() !=0 ?pLabel.getWidth() : 0.5 );
+                v=min+(max-min)*v;
             }
-            float dampen = 0.1f;
-            double v = ((e.getPoint().x-old.x)*step)*dampen+((Double)spinner.getValue()).doubleValue();
             spinner.setValue(v>min?(v<max?v:max):min);
-            //System.out.println(((e.getPoint().x-old.x)*dragStep)*dampen+"+"+((Double)spinner.getValue()).doubleValue());
-            old = e.getPoint();
         }
 
         public void mouseMoved(MouseEvent e) {

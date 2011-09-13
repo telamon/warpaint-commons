@@ -27,6 +27,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DropMode;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -51,7 +52,7 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
     private final static int cellSize=40;
     private int capacity = 0;
     private boolean readOnly= true;
-
+    private static Transferable floating=null;
     
     private static class DispatchHolder{
         //Class intercommunication.
@@ -128,7 +129,11 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         return -1;
     }
 
-
+    /**
+     * ReadyOnly affects only drag'n'drop behaviour,
+     * The addTool/removeTool are completely unaffected. 
+     * @param dropEnabled 
+     */
     public void setReadOnly(boolean dropEnabled) {
         this.readOnly = dropEnabled;
     }
@@ -228,6 +233,7 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
     }
 
     public void mousePressed(MouseEvent ev) {
+        
         int i = locationToIndex(ev.getPoint());
         if(i == -1){
             return;
@@ -240,9 +246,12 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
     }
 
     public void mouseReleased(MouseEvent ev) {
+        System.out.println("Released"+ev);
         int i = locationToIndex(ev.getPoint());
+        
+        // Transfer without dnd...
         if(clipboard!=null && !readOnly){
-
+            
             if(clipSource == this && tools.elementAt(i)!= null){ // Perform a swap.
                 addTool(clipIndex,removeTool(tools.elementAt(i).tool));
                 
@@ -254,6 +263,8 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
             this.repaint();
             return;
         }
+        
+        // Delegate
         if(i == -1){
             return;
         }
@@ -287,26 +298,37 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         }
         this.repaint();
     }
+    /** 
+     *  A qugly (Quick & Ugly ) access to this within anonymous methods.
+     * @return An instance of this toolbar.
+     */
     private SimpleToolbar self(){
         return this;
     }
+    
+    
+    /**
+     *  A private transferhandler
+     *  
+     */
     class ToolTransferHandler extends TransferHandler {
 
         @Override
         public int getSourceActions(javax.swing.JComponent c) {
-            return TransferHandler.COPY_OR_MOVE;
+            return (((SimpleToolbar)c).readOnly) ? TransferHandler.COPY :TransferHandler.COPY_OR_MOVE;
         }
 
         @Override
         public Transferable createTransferable(javax.swing.JComponent c) {
-            //System.out.println("Transferable created");
+            System.out.println("Transferable created");
             if(getSelectedValue()==null){
                 return null;
             }
             clipIndex=getSelectedIndex();
             clipboard= ((ToolComponent) getSelectedValue()).tool;
             clipSource= self();
-            removeTool(clipboard);
+            floating= (ToolComponent) getSelectedValue();
+            //removeTool(clipboard);
             return (ToolComponent) getSelectedValue();
         }
 
@@ -314,9 +336,23 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         @Override
         protected void exportDone(JComponent source, Transferable data, int action) {
             super.exportDone(source, data, action);
+            // Source seems to be the source..
+            if(action == TransferHandler.MOVE && source instanceof SimpleToolbar){
+                ((SimpleToolbar)source).removeTool(((ToolComponent)data).tool);
+            }
             System.out.println("done");
         }
+        
 
+        @Override
+        public Icon getVisualRepresentation(Transferable t) {
+            if(t instanceof ToolComponent){
+                return ((ToolComponent)t).getIcon();
+            }else if(t instanceof Tool){
+                return ((Tool)t).getIcon();
+            }
+            return null;
+        }
 
         @Override
         public boolean canImport(TransferSupport ts) {
@@ -338,7 +374,9 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
             int i = dl.getIndex() == -1 ? tools.size() : dl.getIndex();
 
             try {
+                
                 addTool(i, (Tool) ts.getTransferable().getTransferData(ToolComponent.flavours[0]));
+                
             } catch (UnsupportedFlavorException ex) {
                 Logger.getLogger(SimpleToolbar.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
