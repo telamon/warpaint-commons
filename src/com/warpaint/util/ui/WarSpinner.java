@@ -68,14 +68,14 @@ public abstract class WarSpinner extends JPanel{
         return spinner;
     }
     public WarSpinner(String label,double start,double min,double max,double step){
-        this(label,new javax.swing.SpinnerNumberModel(start,min,max,step));
+        this(label,new javax.swing.SpinnerNumberModel(Math.min(max, Math.max(min, start)),min,max,step));
         this.min=min;
         this.max=max;
         this.step=step;
         this.dvalue=start;
     }
     public WarSpinner(String label,int start,int min,int max,int step){
-        this(label,new javax.swing.SpinnerNumberModel(start,min,max,step));
+        this(label,new javax.swing.SpinnerNumberModel(Math.min(max, Math.max(min, start)),min,max,step));
         this.min=min;
         this.max=max;
         this.step=step;
