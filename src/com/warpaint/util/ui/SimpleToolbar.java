@@ -100,7 +100,8 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
     }
     public void setCapacity(int cap){
         capacity=cap;
-        tools.setSize(capacity);
+        tools.setSize(capacity);        
+        updateSize();
     }
     public int getCapacity(){
         return capacity;
@@ -148,6 +149,7 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
     }
     public void setDirection(int d){
         direction=d;
+        updateSize();
     }
 
     public void addTool(int index,Tool tool) {
@@ -161,14 +163,17 @@ public class SimpleToolbar extends JList implements Toolbar, ListCellRenderer, M
         index = index < 0 ? 0 : index;
 
         tools.set(index, tc);
+        updateSize();
+        this.setListData(tools.toArray());        
+        for(ToolbarListener tl: DispatchHolder.DISPATCHER.exportListenersArray()){
+            tl.toolAppended(this, tool);
+        }
+    }
+    private void updateSize(){
         if(direction==0){
             setPreferredSize(new Dimension(cellSize*capacity , cellSize));
         }else if(direction==1){
             setPreferredSize(new Dimension(cellSize , cellSize*capacity));
-        }
-        this.setListData(tools.toArray());        
-        for(ToolbarListener tl: DispatchHolder.DISPATCHER.exportListenersArray()){
-            tl.toolAppended(this, tool);
         }
     }
     public int indexOfURI(URI uri){
